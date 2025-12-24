@@ -39,4 +39,34 @@ struct APIClient {
 
         return try JSONDecoder().decode(T.self, from: data)
     }
+    func post<Body: Encodable, T: Decodable>(
+        _ path: String,
+        body: Body,
+        accessToken: String? = nil
+    ) async throws -> T {
+        let url = APIConfig.baseURL.appendingPathComponent(path)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
+        }
+
+        guard (200...299).contains(http.statusCode) else {
+            throw APIError.httpStatus(http.statusCode)
+        }
+
+        return try JSONDecoder().decode(T.self, from: data)
+    }
 }

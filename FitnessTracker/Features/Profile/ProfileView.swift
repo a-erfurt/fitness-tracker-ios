@@ -21,11 +21,26 @@ struct ProfileView: View {
                     Button("Logout") { appState.logout() }
                 } else {
                     Text("Status: Guest")
-                    Button("Fake Login (for now)") { appState.login(accessToken: "demo-token") }
+
+                    NavigationLink("Login") {
+                        LoginView()
+                    }
                 }
             }
             .padding()
             .navigationTitle("Profile")
         }
     }
+}
+
+#Preview("Guest") {
+    ProfileView()
+        .environment(AppState())
+}
+
+#Preview("Logged In") {
+    let state = AppState()
+    state.login(accessToken: "preview-token")
+    return ProfileView()
+        .environment(state)
 }
