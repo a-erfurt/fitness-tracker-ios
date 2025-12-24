@@ -14,6 +14,16 @@ final class AppState {
         case guest
         case authenticated(accessToken: String)
     }
+    
+    enum Tab: Hashable {
+        case home
+        case workout
+        case plans
+        case profile
+    }
+
+    var selectedTab: Tab = .home
+    var activeWorkoutId: Int?
 
     var session: SessionState = .guest
 
@@ -28,5 +38,14 @@ final class AppState {
 
     func logout() {
         session = .guest
+    }
+    
+    func startWorkout(id: Int) {
+        activeWorkoutId = id
+        selectedTab = .workout
+    }
+
+    func clearActiveWorkout() {
+        activeWorkoutId = nil
     }
 }

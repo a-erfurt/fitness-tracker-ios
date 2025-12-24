@@ -17,6 +17,9 @@ struct PlanDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var exerciseCache = ExerciseCache()
+    
+    @State private var isStartingWorkout = false
+    @State private var startSuccessMessage: String?
 
     private let api = APIClient()
 
@@ -64,6 +67,20 @@ struct PlanDetailView: View {
         }
         .navigationTitle("Plan")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            Button("Start") {
+                Task { await startWorkout() }
+            }
+            .disabled(isStartingWorkout || !appState.isAuthenticated)
+        }
+        .alert("Workout started", isPresented: Binding(
+            get: { startSuccessMessage != nil },
+            set: { if !$0 { startSuccessMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { startSuccessMessage = nil }
+        } message: {
+            Text(startSuccessMessage ?? "")
+        }
         .task { await load() }
     }
 
@@ -85,6 +102,33 @@ struct PlanDetailView: View {
             }
         } catch {
             errorMessage = prettyError(error)
+        }
+    }
+    
+    private func startWorkout() async {
+        isStartingWorkout = true
+        defer { isStartingWorkout = false }
+
+        let token: String? = {
+            if case let .authenticated(accessToken) = appState.session { return accessToken }
+            return nil
+        }()
+
+        guard token != nil else {
+            startSuccessMessage = "Please log in first."
+            return
+        }
+
+        do {
+            let res: StartWorkoutFromPlanResponseDTO = try await api.post(
+                "workouts/from-plan/\(planId)",
+                body: EmptyBody(),
+                accessToken: token
+            )
+            appState.startWorkout(id: res.id)
+            startSuccessMessage = nil
+        } catch {
+            startSuccessMessage = "Failed to start workout: \(prettyError(error))"
         }
     }
 
@@ -114,6 +158,8 @@ struct PlanDetailView: View {
         return parts.isEmpty ? "No targets" : parts.joined(separator: " • ")
     }
 }
+
+private struct EmptyBody: Encodable {}
 
 #Preview("Guest") {
     NavigationStack {
