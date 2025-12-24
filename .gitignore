@@ -1,0 +1,10 @@
+# Xcode user-specific files (never commit)
+xcuserdata/
+*.xcuserstate
+*.xcbkptlist
+
+# macOS
+.DS_Store
+
+# SwiftPM
+.build/
