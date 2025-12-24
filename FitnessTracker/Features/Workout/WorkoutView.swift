@@ -8,16 +8,31 @@
 import SwiftUI
 
 struct WorkoutView: View {
+    @Environment(AppState.self) private var appState
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 12) {
                 Text("Workout")
                     .font(.largeTitle).bold()
-                Text("Later: start/end workout, log sets (tracking_type decides UI)")
-                    .foregroundStyle(.secondary)
+
+                if let id = appState.activeWorkoutId {
+                    Text("Active Workout: #\(id)")
+                        .font(.headline)
+                } else {
+                    Text("No active workout")
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding()
             .navigationTitle("Workout")
         }
     }
+}
+
+#Preview {
+    let state = AppState()
+    state.startWorkout(id: 123)
+    return WorkoutView()
+        .environment(state)
 }
