@@ -42,7 +42,9 @@ struct PlansView: View {
                     )
                 } else {
                     List(plans) { plan in
-                        Text(plan.name)
+                        NavigationLink(plan.name) {
+                            PlanDetailView(planId: plan.id)
+                        }
                     }
                 }
             }
