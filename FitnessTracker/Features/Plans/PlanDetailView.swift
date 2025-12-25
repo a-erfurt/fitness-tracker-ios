@@ -159,8 +159,6 @@ struct PlanDetailView: View {
     }
 }
 
-private struct EmptyBody: Encodable {}
-
 #Preview("Guest") {
     NavigationStack {
         PlanDetailView(planId: 1)
